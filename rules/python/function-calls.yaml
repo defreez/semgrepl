@@ -1,0 +1,8 @@
+rules:
+    - id: python-imports
+      message: $X
+      languages: [python]
+      severity: WARNING
+      pattern-either:
+        - pattern: $X.{{function_name}}
+        - pattern: {{function_name}}

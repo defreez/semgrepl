@@ -1,12 +1,14 @@
+import json
+import os
+import tempfile
+from collections import defaultdict
 from typing import List
 from io import StringIO
 from semgrep.output import OutputHandler
 from semgrep.output import OutputSettings
 from semgrep.constants import OutputFormat
-from collections import defaultdict
 import semgrep.semgrep_main
-import json
-import os
+from jinja2 import Environment, FileSystemLoader
 
 def semgrep_pattern(pattern: str, targets: List[str], config = ""):
     io_capture = StringIO()
@@ -76,11 +78,25 @@ def count_collection(obj_collection):
 
 def find_imports(target, rules_dir) -> List[SemgreplImport]:
     # TODO: generalize across other langs
-    python_import_rule_path = os.path.join(rules_dir, "python", "python-imports.yaml")
-    matches = semgrep_pattern("", [target], python_import_rule_path)
+    rule_path = os.path.join(rules_dir, "python", "python-imports.yaml")
+    matches = semgrep_pattern("", [target], rule_path)
 
-    import_matches = [SemgreplImport(x) for x in matches['results']]    
+    import_matches = [SemgreplImport(x) for x in matches['results']]
     matches = collect_imports(import_matches)
-    counts = count_collection(matches)
-    import ipdb; ipdb.set_trace()
+    #counts = count_collection(matches)
+    return matches
+
+def find_function_calls(target, rules_dir, function_name) -> List[SemgreplImport]:
+    python_rules_dir = os.path.join(rules_dir, "python")
+    env = Environment(loader = FileSystemLoader(python_rules_dir), trim_blocks=True, lstrip_blocks=True)
+    template = env.get_template("function-calls.yaml")
+    rendered_config = template.render(function_name=function_name)
+
+    # This is ugly, but semgrep_main wants a config file path...
+    # Use a lower-level API to avoid tmp file creation?
+    tf = tempfile.NamedTemporaryFile(mode='wt')
+    tf.write(rendered_config)
+    tf.flush()
+    matches = semgrep_pattern("", [target], tf.name)
+    tf.close()
     return matches
