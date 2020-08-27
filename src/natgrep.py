@@ -9,6 +9,7 @@ function_map = {
     'find-function-definitions': utils.find_all_function_defs,
     'function-defs-by-name': utils.find_function_defs_by_name,
     'all-annotations': utils.all_annotations,
+    'strings': utils.strings
 }
 
 def natgrep(target, rules_dir, text):
