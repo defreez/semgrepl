@@ -78,11 +78,16 @@ def find_function_calls(target, rules_dir, function_name) -> List[semgrepl.Semgr
     call_matches = [semgrepl.SemgreplFunctionCall(function_name, x) for x in matches['results']]
     return call_matches
 
-def find_function_defs(target, rules_dir) -> List[semgrepl.SemgreplFunctionDef]:
+def find_function_defs_by_name(target, rules_dir, function_name) -> List[semgrepl.SemgreplFunctionDef]:
     python_rules_dir = os.path.join(rules_dir, "python")
-    matches = _render_and_run(python_rules_dir, "function-defs.yaml", target)
-    function_def_matches = [semgrepl.SemgreplFunctionDef(x) for x in matches['results']]
+    template_vars = {"function_name": function_name}
+    print(template_vars)
+    matches = _render_and_run(python_rules_dir, "function-defs.yaml", target, template_vars)
+    function_def_matches = [semgrepl.SemgreplFunctionDef(x, function_name) for x in matches['results']]
     return function_def_matches
+
+def find_all_function_defs(target, rules_dir) -> List[semgrepl.SemgreplFunctionDef]:
+    return find_function_defs_by_name(target, rules_dir, "$X")
 
 def find_all_classes(target, rules_dir):
     rule_path = os.path.join(rules_dir, "python", "classes.yaml")

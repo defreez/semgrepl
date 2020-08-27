@@ -1,8 +1,8 @@
 rules:
     - id: python-function-defs
-      message: $X
+      message: function definition {{function_name}}
       pattern: |
-        def $X(...):
+        def {{function_name}}(...):
           ...
       message: |
         Match found

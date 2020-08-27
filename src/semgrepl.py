@@ -48,13 +48,15 @@ class SemgreplFunctionCall(SemgreplObject):
         return self.file_path == other.file_path and self.name == other.name
 
 class SemgreplFunctionDef(SemgreplObject):
-    def __init__(self, match):
+    def __init__(self, match, function_name=None):
         metavars = match['extra']['metavars']
         self.file_path = match['path']
         self.start = match['start']
         self.end = match['end']
 
-        if '$X' in metavars:
+        if function_name != "$X":
+            self.name = function_name
+        elif '$X' in metavars:
             self.name = metavars['$X']['abstract_content']
         else:
             print("Failed on file: " + self.file_path)
