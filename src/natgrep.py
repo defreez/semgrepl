@@ -5,13 +5,11 @@ import utils
 
 function_map = {
     'find-calls': utils.find_function_calls,
-    'all-classes': utils.all_classes,
+    'all-classes': utils.find_all_classes,
+    'find-function-definitions': utils.find_function_defs,
 }
 
-target = "/home/daniel/ppa/semgrep_repl/clusterfuzz/src/appengine/server.py"
-rules_dir = "../rules"
-
-def natgrep(text):
+def natgrep(target, rules_dir, text):
     """Returns the result of detect intent with texts as inputs.
 
     Using the same `session_id` between requests allows continuation
@@ -36,7 +34,8 @@ def natgrep(text):
     #import ipdb; ipdb.set_trace()
     try:
         result = function_map[response.query_result.intent.display_name](target, rules_dir, **params)
-    except:
+    except Exception as e:
+        print(e)
         return None
 
     return result
