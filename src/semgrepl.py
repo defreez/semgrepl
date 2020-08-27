@@ -33,6 +33,7 @@ class SemgreplFunctionCall(SemgreplObject):
         self.start = match['start']
         self.end = match['end']
         self.name = function_name
+        self.instance = None
 
         if '$X' in metavars:
             self.instance = metavars['$X']['abstract_content']
