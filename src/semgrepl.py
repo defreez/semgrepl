@@ -105,3 +105,24 @@ class SemgreplClass(SemgreplObject):
 
     def __eq__(self, other):
         return self.file_path == other.file_path and self.name == other.name
+
+class SemgreplString(SemgreplObject):
+    def __init__(self, match):
+        self.file_path = match['path']
+        metavars = match['extra']['metavars']
+        self.match = match
+
+        if '$X' in metavars:
+            self.name = metavars['$X']['abstract_content']
+        else:
+            print("Failed on file: " + self.file_path)
+            self.name = "FAILED"
+
+    def __repr__(self):
+        return "<SemgreplString file_path={} name={}".format(self.file_path, self.name)
+
+    def __hash__(self):
+        return hash(self.file_path + self.name)
+
+    def __eq__(self, other):
+        return self.file_path == other.file_path and self.name == other.name

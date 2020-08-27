@@ -1,0 +1,7 @@
+rules:
+    - id: strings
+      message: $X
+      pattern: |
+        $X
+      languages: [python]
+      severity: WARNING

@@ -105,3 +105,8 @@ def all_annotations(target, rules_dir):
         for a in f.annotations:
             annotations.add(a)
     return annotations
+
+def strings(target, rules_dir):
+    matches = _render_and_run(rules_dir, "strings.yaml", target)
+    string_matches = [semgrepl.SemgreplString(x) for x in matches['results']]
+    return string_matches
