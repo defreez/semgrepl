@@ -10,6 +10,7 @@ class SemgreplImport(SemgreplObject):
         self.file_path = match['path']
         self.start = match['start']
         self.end = match['end']
+        self.match = match
 
         if '$X' in metavars:
             self.import_path = metavars['$X']['abstract_content']
@@ -34,6 +35,7 @@ class SemgreplFunctionCall(SemgreplObject):
         self.end = match['end']
         self.name = function_name
         self.instance = None
+        self.match = match
 
         if '$X' in metavars:
             self.instance = metavars['$X']['abstract_content']
@@ -53,6 +55,7 @@ class SemgreplFunctionDef(SemgreplObject):
         self.file_path = match['path']
         self.start = match['start']
         self.end = match['end']
+        self.match = match
 
         if function_name != "$X":
             self.name = function_name
@@ -61,6 +64,15 @@ class SemgreplFunctionDef(SemgreplObject):
         else:
             print("Failed on file: " + self.file_path)
             self.name = "FAILED"
+
+    @property
+    def annotations(self):
+        annotations = []
+        lines = self.match['extra']['lines']
+        for l in lines.split("\n"):
+            if "@" in l:
+                annotations.append(l.strip())
+        return annotations
 
     def __repr__(self):
         return "<SemgreplFunctionDef file_path={} name={}>".format(self.file_path, self.name)
@@ -72,11 +84,14 @@ class SemgreplFunctionDef(SemgreplObject):
         return self.file_path == other.file_path and self.name == other.name
 
 class SemgreplClass(SemgreplObject):
-    def __init__(self, match):
+    def __init__(self, match, class_name=None):
         self.file_path = match['path']
         metavars = match['extra']['metavars']
+        self.match = match
 
-        if '$X' in metavars:
+        if class_name != "$X":
+            self.name = class_name
+        elif '$X' in metavars:
             self.name = metavars['$X']['abstract_content']
         else:
             print("Failed on file: " + self.file_path)

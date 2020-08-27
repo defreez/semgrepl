@@ -81,7 +81,6 @@ def find_function_calls(target, rules_dir, function_name) -> List[semgrepl.Semgr
 def find_function_defs_by_name(target, rules_dir, function_name) -> List[semgrepl.SemgreplFunctionDef]:
     python_rules_dir = os.path.join(rules_dir, "python")
     template_vars = {"function_name": function_name}
-    print(template_vars)
     matches = _render_and_run(python_rules_dir, "function-defs.yaml", target, template_vars)
     function_def_matches = [semgrepl.SemgreplFunctionDef(x, function_name) for x in matches['results']]
     return function_def_matches
@@ -89,8 +88,20 @@ def find_function_defs_by_name(target, rules_dir, function_name) -> List[semgrep
 def find_all_function_defs(target, rules_dir) -> List[semgrepl.SemgreplFunctionDef]:
     return find_function_defs_by_name(target, rules_dir, "$X")
 
-def find_all_classes(target, rules_dir):
-    rule_path = os.path.join(rules_dir, "python", "classes.yaml")
-    matches = semgrep_pattern("", [target], rule_path)
-    class_matches = [semgrepl.SemgreplClass(x) for x in matches['results']]
+def find_classes_by_name(target, rules_dir, class_name):
+    python_rules_dir = os.path.join(rules_dir, "python")
+    template_vars = {"class_name": class_name}
+    matches = _render_and_run(python_rules_dir, "classes.yaml", target, template_vars)
+    class_matches = [semgrepl.SemgreplClass(x, class_name) for x in matches['results']]
     return class_matches
+
+def find_all_classes(target, rules_dir):
+    return find_classes_by_name(target, rules_dir, "$X")
+
+def all_annotations(target, rules_dir):
+    annotations = set()
+    all_functions = find_all_function_defs(target, rules_dir)
+    for f in all_functions:
+        for a in f.annotations:
+            annotations.add(a)
+    return annotations

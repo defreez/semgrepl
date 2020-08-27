@@ -1,9 +1,9 @@
 rules:
-    - id: python-all-classes
-      message: $X
+    - id: python-class-name
+      message: {{class_name}}
       languages: [python]
       severity: WARNING
       pattern-either:
         - pattern: |
-            class $X(...):
+            class {{class_name}}(...):
                 ...
