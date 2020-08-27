@@ -1,0 +1,65 @@
+class SemgreplObject:
+    pass
+
+# Decision: is it worth having custom Python classes for everything?
+#   Convenient but feels like it is duplicating a lot.
+
+class SemgreplImport(SemgreplObject):
+    def __init__(self, match):
+        metavars = match['extra']['metavars']
+        self.file_path = match['path']
+
+        if '$X' in metavars:
+            self.import_path = metavars['$X']['abstract_content']
+        else:
+            print("Failed on file: " + self.file_path)
+            self.import_path = "FAILED"
+
+    def __repr__(self):
+        return "<SemgreplImport file_path={} import_path={}>".format(self.file_path, self.import_path)
+
+    def __hash__(self):
+        return hash(self.import_path + self.file_path)
+
+    def __eq__(self, other):
+        return self.file_path == other.file_path and self.import_path == other.import_path
+
+class SemgreplFunctionDef(SemgreplObject):
+    def __init__(self, match):
+        metavars = match['extra']['metavars']
+        self.file_path = match['path']
+
+        if '$X' in metavars:
+            self.name = metavars['$X']['abstract_content']
+        else:
+            print("Failed on file: " + self.file_path)
+            self.name = "FAILED"
+
+    def __repr__(self):
+        return "<SemgreplFunctionDef file_path={} name={}>".format(self.file_path, self.name)
+
+    def __hash__(self):
+        return hash(self.file_path + self.name)
+
+    def __eq__(self, other):
+        return self.file_path == other.file_path and self.name == other.name
+
+class SemgreplClass(SemgreplObject):
+    def __init__(self, match):
+        self.file_path = match['path']
+        metavars = match['extra']['metavars']
+
+        if '$X' in metavars:
+            self.name = metavars['$X']['abstract_content']
+        else:
+            print("Failed on file: " + self.file_path)
+            self.name = "FAILED"
+
+    def __repr__(self):
+        return "<SemgreplClass file_path={} name={}".format(self.file_path, self.name)
+
+    def __hash__(self):
+        return hash(self.file_path + self.name)
+
+    def __eq__(self, other):
+        return self.file_path == other.file_path and self.name == other.name

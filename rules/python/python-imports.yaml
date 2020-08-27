@@ -6,4 +6,5 @@ rules:
       metadata:
         category: "import"
       pattern-either:
-        - pattern: import $X
+        - pattern: |
+            import $X
