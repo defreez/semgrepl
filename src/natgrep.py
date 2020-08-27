@@ -30,9 +30,10 @@ def natgrep(target, rules_dir, text):
     params = dict()
     for p in response.query_result.parameters:
         params[p] = response.query_result.parameters[p]
-
-    #import ipdb; ipdb.set_trace()
     try:
+        fn = function_map[response.query_result.intent.display_name]
+        #print(fn)
+        #print(params)
         result = function_map[response.query_result.intent.display_name](target, rules_dir, **params)
     except Exception as e:
         print(e)
