@@ -32,8 +32,10 @@ def natgrep(target, rules_dir, text):
         params[p] = response.query_result.parameters[p]
     try:
         fn = function_map[response.query_result.intent.display_name]
-        #print(fn)
-        #print(params)
+        if params:
+            print("{}({})".format(fn.__name__, params))
+        else:
+            print("{}()".format(fn.__name__))
         result = function_map[response.query_result.intent.display_name](target, rules_dir, **params)
     except Exception as e:
         print(e)
