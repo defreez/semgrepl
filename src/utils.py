@@ -56,7 +56,7 @@ class SemgreplImport(SemgreplObject):
 
 
 
-def collect_matches(fn, matches : List[SemgreplObject]):
+def collect_matches(fn, matches: List[SemgreplObject]):
     ret = defaultdict(set)
     for match in matches:
         k = fn(match)
@@ -99,4 +99,13 @@ def find_function_calls(target, rules_dir, function_name) -> List[SemgreplImport
     tf.flush()
     matches = semgrep_pattern("", [target], tf.name)
     tf.close()
+    return matches
+
+def all_classes(target, rules_dir):
+    rule_path = os.path.join(rules_dir, "python", "classes.yaml")
+    matches = semgrep_pattern("", [target], rule_path)
+
+    import_matches = [SemgreplImport(x) for x in matches['results']]
+    matches = collect_imports(import_matches)
+
     return matches

@@ -1,9 +1,9 @@
 rules:
-    - id: python-imports
+    - id: python-all-classes
       message: $X
       languages: [python]
       severity: WARNING
-      metadata:
-        category: "import"
       pattern-either:
-        - pattern: import $X
+        - pattern: |
+            class $X(...):
+                ...

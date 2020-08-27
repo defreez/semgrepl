@@ -1,5 +1,5 @@
 rules:
-    - id: python-imports
+    - id: python-function-calls
       message: $X
       languages: [python]
       severity: WARNING
