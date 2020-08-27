@@ -8,6 +8,8 @@ class SemgreplImport(SemgreplObject):
     def __init__(self, match):
         metavars = match['extra']['metavars']
         self.file_path = match['path']
+        self.start = match['start']
+        self.end = match['end']
 
         if '$X' in metavars:
             self.import_path = metavars['$X']['abstract_content']
@@ -24,10 +26,32 @@ class SemgreplImport(SemgreplObject):
     def __eq__(self, other):
         return self.file_path == other.file_path and self.import_path == other.import_path
 
+class SemgreplFunctionCall(SemgreplObject):
+    def __init__(self, function_name, match):
+        metavars = match['extra']['metavars']
+        self.file_path = match['path']
+        self.start = match['start']
+        self.end = match['end']
+        self.name = function_name
+
+        if '$X' in metavars:
+            self.instance = metavars['$X']['abstract_content']
+
+    def __repr__(self):
+        return "<SemgreplFunctionCall file_path={} name={} instance={}>".format(self.file_path, self.name, self.instance)
+
+    def __hash__(self):
+        return hash(self.file_path + self.name)
+
+    def __eq__(self, other):
+        return self.file_path == other.file_path and self.name == other.name
+
 class SemgreplFunctionDef(SemgreplObject):
     def __init__(self, match):
         metavars = match['extra']['metavars']
         self.file_path = match['path']
+        self.start = match['start']
+        self.end = match['end']
 
         if '$X' in metavars:
             self.name = metavars['$X']['abstract_content']

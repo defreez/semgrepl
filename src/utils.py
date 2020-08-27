@@ -52,9 +52,8 @@ def count_collection(obj_collection):
 
 def _render_and_run(rules_dir, config_file, target, template_vars={}):
     env = Environment(loader = FileSystemLoader(rules_dir), trim_blocks=True, lstrip_blocks=True)
-    template = env.get_template("function-defs.yaml")
+    template = env.get_template(config_file)
     rendered_config = template.render(**template_vars)
-
     # This is ugly, but semgrep_main wants a config file path...
     # Use a lower-level API to avoid tmp file creation?
     tf = tempfile.NamedTemporaryFile(mode='wt')
@@ -72,16 +71,16 @@ def find_imports(target, rules_dir) -> List[semgrepl.SemgreplImport]:
     import_matches = [semgrepl.SemgreplImport(x) for x in matches['results']]
     return collect_matches(lambda i: i.import_path, import_matches)
 
-def find_function_calls(target, rules_dir, function_name) -> List[semgrepl.SemgreplImport]:
+def find_function_calls(target, rules_dir, function_name) -> List[semgrepl.SemgreplFunctionCall]:
     python_rules_dir = os.path.join(rules_dir, "python")
     template_vars = {"function_name": function_name}
     matches = _render_and_run(python_rules_dir, "function-calls.yaml", target, template_vars)
-    call_matches = [semgrepl.SemgreplCall(x) for x in matches['results']]
+    call_matches = [semgrepl.SemgreplFunctionCall(function_name, x) for x in matches['results']]
     return call_matches
 
 def find_function_defs(target, rules_dir) -> List[semgrepl.SemgreplFunctionDef]:
     python_rules_dir = os.path.join(rules_dir, "python")
-    matches = _render_and_run(python_rules_dir, "funtion-defs.yaml", target)
+    matches = _render_and_run(python_rules_dir, "function-defs.yaml", target)
     function_def_matches = [semgrepl.SemgreplFunctionDef(x) for x in matches['results']]
     return function_def_matches
 
