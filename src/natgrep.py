@@ -4,6 +4,7 @@ import dialogflow_v2 as dialogflow
 import utils
 
 function_map = {
+    'find-imports': utils.find_imports,
     'find-calls': utils.find_function_calls,
     'all-classes': utils.find_all_classes,
     'find-function-definitions': utils.find_all_function_defs,
