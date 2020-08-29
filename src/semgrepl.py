@@ -74,6 +74,10 @@ class SemgreplFunctionDef(SemgreplObject):
                 annotations.append(l.strip())
         return annotations
 
+    @property
+    def location(self):
+        return "{}:{}".format(self.file_path, self.start['line'])
+
     def __repr__(self):
         return "<SemgreplFunctionDef file_path={} name={}>".format(self.file_path, self.name)
 
