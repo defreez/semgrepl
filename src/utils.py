@@ -2,7 +2,7 @@ import json
 import os
 import tempfile
 from collections import defaultdict
-from typing import List
+from typing import List, Dict
 from io import StringIO
 from semgrep.output import OutputHandler
 from semgrep.output import OutputSettings
@@ -10,6 +10,118 @@ from semgrep.constants import OutputFormat
 import semgrep.semgrep_main
 from jinja2 import Environment, FileSystemLoader
 import semgrepl
+import tokei
+
+# Prompt user during setup to define the scope of what they're testing 
+# (probably a repo), and the base rules dir.
+#
+#
+# These will be used by default in various commands unless another
+# value is explicitly passed in.
+
+#
+# How to automagically do the right thing across many languages?
+#   Why? Sometimes repos are polyglot
+#
+# - Do you specify a language in the argument? (this should always be an option)
+# - Can we infer it based on file extension or tools that infer language 
+#   from text?
+# 
+# - Usually you probably have a main language you care about, maybe the user
+#   specifies a default language that's used when one isn't specified?
+#
+# Should NOT do:
+# - iterate over every file - figure out what type it is, run semgrep on that
+# - (running semgrep N times for N files)
+#
+# HACK!
+# 1. On project setup / config setup, specify target dir(s)
+# 2. Auto-run tokei/fingerprint tech used -> languages
+# 3. Auto set config.languages = [results from tokei]
+# 4. Whenever you run find_classes() uses all of the langs in conf.languages
+#    - Invoke semgrep once per language
+# 
+# If the above doesn't work for some reason, you can manually append a language
+# to your config.languages and that'll be run in addition (or remove langs).
+
+# =============
+# Chaining
+# =============
+#
+#
+# Find every method calling exec()
+#    for every result in ^, find methods calling it (repeat to entry points?)
+#
+#  find classes named Handler, find methods named get in results
+#  ==> Find classes |> find methods
+#
+# find all entrypoints - finds all main()'s + routes
+# |> extract stuff from inside
+#     - all functions called inside 
+#     - all user parameters accessed - (URL param, headers, POST body param)
+# ==> Find fxn defs |> find function calls within those | variables used
+#
+# Approximating Call Graph analysis / flow between files and methods
+# - "How do I get here?"
+# - Need: entrypoints
+#   - Finding all functions called within entrypoints
+#   - Doing this recursively
+#
+# Matching things across multiple files (sorta rule A depends on B)
+# - Find me all patterns that look like <foo> but only if <bar> pattern appears
+#   in another file (either a specific file or any file)
+# - Given property X holds for the target repo, search out Y.
+# ==> run query X, run query Y, return True if len(X) > 0 && len(Y) > 0
+#     run query X and run query Y
+#
+# Seem to need to be able to go:
+# - Inward - what's inside what is matched
+# - Outward - parents, seems hard to do precisely, maybe requires 
+#             running semgrep across multiple times, a bit tricky
+#
+# Basically what IDEs give you:
+# - Find definition
+# - Find references ("outward")
+#
+# ================
+#
+# Default queries that run on init.
+    # - extract imports. class names. class hierarchy
+    # - run strings
+    # - runs tokei
+    # - just say go and it shows you all these things
+    # - automate the first 1 hour of any pen test / grokking a new repo
+# could be easy to personalize. Each person has their own config
+# - always do this on new repos. Maybe config per lang/framework.
+#
+#
+# Flask to start with.
+# - extract routes
+# - annotations more generally, csrf, auth
+# - url parameters, cookies, headers, post body, path parameters
+# - file i/o. network i/o. crypto. pickle. shell exec. eval
+# - env variables
+#   - look at names
+# - main()
+# - fingerprint test files
+# - technologies used? SSO, JWT, authn/authz, AWS/GCP/Azure (cloud), ...
+#
+
+#
+# ===========
+# Integrate with VS Code: Jump to program point
+# 1. run the pattern in the Terminal at the bottom
+# 2. match some stuff
+# 3. Click on what you matched to jump to where it is in the code
+#
+# Similar: triage workflow
+# 1. Match a bunch of things
+# 2. Make it easy to go through them one at a time, marking as:
+#    - Interesting, def not interesting, review later, ...
+# 3. Bring up the relevant code
+#
+# -- Stretch: be able to annotate the code non destructively / share notes --
+
 
 def semgrep_pattern(pattern: str, targets: List[str], config = ""):
     io_capture = StringIO()
