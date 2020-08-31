@@ -13,6 +13,7 @@ from jinja2 import Environment, FileSystemLoader
 from semgrepl.abstract import *
 import semgrepl.tokei
 from semgrepl.config import SemgreplConfig
+import networkx as nx
 
 # Prompt user during setup to define the scope of what they're testing
 # (probably a repo), and the base rules dir.
@@ -195,7 +196,6 @@ def _render_and_run(semgrepl_config: SemgreplConfig, rules_yaml_file: str, templ
     languages.append("")        # some rules work for all languages
     for lang in languages:
         lang_dir = os.path.join(semgrepl_config.rules_dir, lang)
-        semgrepl_config.logger.debug(lang_dir)
         env = Environment(loader = FileSystemLoader(lang_dir), trim_blocks=True, lstrip_blocks=True)
         if not os.path.exists(os.path.join(lang_dir, rules_yaml_file)):
             if lang:
@@ -244,6 +244,16 @@ def classes_by_name(semgrepl_config: SemgreplConfig, class_name: str):
 
 def all_classes(semgrepl_config: SemgreplConfig):
     return classes_by_name(semgrepl_config, "$NAME")
+
+def class_hierarchy(semgrepl_config: SemgreplConfig):
+    classes = all_classes(semgrepl_config)
+    G = nx.DiGraph()
+    for c in classes:
+        if c.parent:
+            G.add_edge(c.parent, c.name)
+        else:
+            G.add_node(c.name)
+    return G
 
 def all_annotations(semgrepl_config: SemgreplConfig):
     annotations = set()

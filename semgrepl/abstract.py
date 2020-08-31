@@ -112,8 +112,6 @@ class SemgreplClass(SemgreplObject):
             print("Failed on file: " + self.file_path)
             self.name = "FAILED"
 
-        import sys
-        print(metavars, file=sys.stderr)
         if '$PARENT' in metavars:
             self.parent = metavars['$PARENT']['abstract_content']
 
