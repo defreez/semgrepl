@@ -243,7 +243,7 @@ def classes_by_name(semgrepl_config: SemgreplConfig, class_name: str):
     return class_matches
 
 def all_classes(semgrepl_config: SemgreplConfig):
-    return classes_by_name(semgrepl_config, "$X")
+    return classes_by_name(semgrepl_config, "$NAME")
 
 def all_annotations(semgrepl_config: SemgreplConfig):
     annotations = set()

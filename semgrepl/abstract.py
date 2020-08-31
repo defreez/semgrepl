@@ -102,13 +102,20 @@ class SemgreplClass(SemgreplObject):
         metavars = match['extra']['metavars']
         self.match = match
 
-        if class_name != "$X":
+        self.parent = None
+
+        if class_name != "$NAME":
             self.name = class_name
-        elif '$X' in metavars:
-            self.name = metavars['$X']['abstract_content']
+        elif '$NAME' in metavars:
+            self.name = metavars['$NAME']['abstract_content']
         else:
             print("Failed on file: " + self.file_path)
             self.name = "FAILED"
+
+        import sys
+        print(metavars, file=sys.stderr)
+        if '$PARENT' in metavars:
+            self.parent = metavars['$PARENT']['abstract_content']
 
     def __repr__(self):
         return "<SemgreplClass file_path={} name={}".format(self.file_path, self.name)

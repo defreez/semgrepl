@@ -1,9 +1,12 @@
 rules:
-    - id: python-class-name
+    - id: python-class
       message: {{class_name}}
       languages: [python]
       severity: WARNING
       pattern-either:
         - pattern: |
-            class {{class_name}}(...):
+            class {{class_name}}($PARENT):
+                ...
+        - pattern: |
+            class {{class_name}}:
                 ...
