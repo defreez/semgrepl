@@ -2,6 +2,7 @@ import json
 import os
 import tempfile
 import glob
+import re
 from collections import defaultdict
 from typing import List, Dict
 from io import StringIO
@@ -239,21 +240,53 @@ def all_function_defs(semgrepl_config: SemgreplConfig) -> List[SemgreplFunctionD
 def classes_by_name(semgrepl_config: SemgreplConfig, class_name: str):
     template_vars = {"class_name": class_name}
     matches = _render_and_run(semgrepl_config, "classes.yaml", template_vars)
-    class_matches = [SemgreplClass(x, class_name) for x in matches]
+    class_matches = [class_factory(x, class_name) for x in matches]
     return class_matches
 
-def all_classes(semgrepl_config: SemgreplConfig):
-    return classes_by_name(semgrepl_config, "$NAME")
+def all_classes(semgrepl_config: SemgreplConfig) -> List[SemgreplClass]:
+    classes = classes_by_name(semgrepl_config, "$NAME")
+    # Populates .parent_class attribute of class objects
+    _resolve_parent_classes(classes)
+    return classes
 
-def class_hierarchy(semgrepl_config: SemgreplConfig):
-    classes = all_classes(semgrepl_config)
+def _resolve_parent_classes(classes: List[SemgreplClass]):
+    """Constructs a class hierarchy. Only works for languages that can
+    construct qualified names (currently just Python).
+    """
+    # Dictionary from qualified name to SemgreplClass object
+    qualified_names = dict()
+    unqualified_names = dict()
+    for c in classes:
+        qualified_names[c.qualified_name] = c
+        unqualified_names[c.name] = c
+
+    for c in classes:
+        if c.parent_name:
+            if c.parent_name in qualified_names:
+                # We have definitions for both classes
+                c.parent_class = qualified_names[c.parent_name]
+            elif c.parent_name in unqualified_names:
+                c.parent_class = unqualified_names[c.parent_name]
+            else:
+                # One class is imported from library
+                external_class = SemgreplClass(None, c.parent_name)
+                c.parent_class = external_class
+
+def class_hierarchy(classes: List[SemgreplClass]) -> nx.DiGraph:
     G = nx.DiGraph()
     for c in classes:
-        if c.parent:
-            G.add_edge(c.parent, c.name)
+        if c.parent_class:
+            G.add_edge(c.parent_class, c)
         else:
-            G.add_node(c.name)
+            G.add_node(c)
     return G
+
+def subclasses(hierarchy: nx.DiGraph, qualified_class_name) -> List[str]:
+    descendants = []
+    for n in hierarchy.nodes():
+        if qualified_class_name in n.qualified_name:
+            descendants.extend(nx.descendants(hierarchy, n))
+    return descendants
 
 def all_annotations(semgrepl_config: SemgreplConfig):
     annotations = set()
