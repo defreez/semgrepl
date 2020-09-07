@@ -1,4 +1,5 @@
-semgrep==0.21.0
+semgrep==0.22.0
 Jinja2==2.11.2
 pytest==6.0.1
 jupyter==1.0.0
+
